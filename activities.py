@@ -240,7 +240,8 @@ class ActivitiesPanel(wx.Panel):
                     win.Bind(
                         wx.EVT_MENU,
                         bindings.get(
-                            eventName, lambda evt: self.CustomAction(eventName)
+                            eventName,
+                            lambda evt, name=eventName: self.CustomAction(name),
                         ),
                         id=eventId,
                     )
@@ -905,7 +906,7 @@ class ActivitiesPanel(wx.Panel):
             md = self.giface.GetMapDisplay()
         mdSize = md.GetSize()
         mdPos = md.GetPosition()
-        return (mdPos[0] + pos[0] * mdSize[0], mdPos[1] + pos[1] * mdSize[1])
+        return (int(mdPos[0] + pos[0] * mdSize[0]), int(mdPos[1] + pos[1] * mdSize[1]))
 
     def _getSizeFromRelative(self, size):
         if self.IsStandalone():
@@ -913,7 +914,7 @@ class ActivitiesPanel(wx.Panel):
         else:
             md = self.giface.GetMapDisplay()
         mdSize = md.GetSize()
-        return (size[0] * mdSize[0], size[1] * mdSize[1])
+        return (int(size[0] * mdSize[0]), int(size[1] * mdSize[1]))
 
     def OnDisplayUpdate(self, event):
         if not self.dashboardFrame:
