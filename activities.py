@@ -46,6 +46,7 @@ class ActivitiesPanel(wx.Panel):
         self.scaniface = scaniface
         self.current = 0
         self.currentSubtask = 0
+        self.currentSprayLayer = ""
         self.startTime = 0
         self.endTime = 0
         self.settingsChanged = Signal("ActivitiesPanel.settingsChanged")
@@ -56,7 +57,10 @@ class ActivitiesPanel(wx.Panel):
         self.dashboardFrame = None
         self.handsoff = None
         self.slides = None
-        self.scaniface.additionalParams4Analyses = {"subTask": self.currentSubtask}
+        self.scaniface.additionalParams4Analyses = {
+            "subTask": self.currentSubtask,
+            "sprayLayer": self.currentSprayLayer,
+        }
         self._processingSubTask = False
 
         # we want to start in pause mode to not capture any data
@@ -106,6 +110,10 @@ class ActivitiesPanel(wx.Panel):
         self.timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.OnTimer)
 
+        # Add a button with a drop-down menu
+        self.choice = wx.Choice(parent=self, choices=["No Choices Yet"])
+        self.choice.Bind(wx.EVT_CHOICE, self.OnChangeChoice)
+
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(
@@ -125,6 +133,8 @@ class ActivitiesPanel(wx.Panel):
         sizer.Add(
             self.buttonCalibrate, proportion=0, flag=wx.ALIGN_CENTER_VERTICAL, border=5
         )
+        sizer.Add(self.choice, proportion=1, flag=wx.ALIGN_CENTER_VERTICAL, border=5)
+
         self.mainSizer.Add(sizer, flag=wx.EXPAND | wx.ALL, border=5)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(
@@ -196,7 +206,20 @@ class ActivitiesPanel(wx.Panel):
             self._enableGUI(False)
         if self.configFile:
             self.buttonNext.Show("sublayers" in self.tasks[self.current])
-            self.buttonCalibrate.Show("calibrate" in self.tasks[self.current])
+            self.buttonCalibrate.Show(
+                "calibrate" in self.tasks[self.current]
+                and self.tasks[self.current]["calibrate"]
+            )
+            if self.tasks[self.current]["choices"]:
+                choices = self.tasks[self.current]["choices"]
+                self.choice.Set(choices)
+                default = 0
+                self.choice.SetSelection(default)
+                self.choice.Show("choices" in self.tasks[self.current])
+                self.currentSprayLayer = self.choice.GetStringSelection()
+                self.scaniface.additionalParams4Analyses = {
+                    "sprayLayer": self.currentSprayLayer
+                }
 
         self._bindUserStop()
         self.Layout()
@@ -206,6 +229,7 @@ class ActivitiesPanel(wx.Panel):
         self.buttonForward.Enable(enable)
         self.buttonStart.Enable(enable)
         self.buttonCalibrate.Enable(enable)
+        self.choice.Enable(enable)
         self.buttonStop.Enable(enable)
         self.slidesStatus.Enable(enable)
         self.timeText.Enable(enable)
@@ -272,6 +296,13 @@ class ActivitiesPanel(wx.Panel):
         if self.timer.IsRunning():
             self.OnStop(event=None)
         self.OnBack(None)
+
+    def OnChangeChoice(self, event):
+        """React to user changing the selection"""
+        self.currentSprayLayer = self.choice.GetStringSelection()
+        self.scaniface.additionalParams4Analyses = {
+            "sprayLayer": self.currentSprayLayer
+        }
 
     def _checkChangeTask(self):
         if self.timer.IsRunning():
@@ -399,6 +430,16 @@ class ActivitiesPanel(wx.Panel):
             "calibrate" in self.tasks[self.current]
             and self.tasks[self.current]["calibrate"]
         )
+        if self.tasks[self.current]["choices"]:
+            choices = self.tasks[self.current]["choices"]
+            self.choice.Set(choices)
+            default = 0
+            self.choice.SetSelection(default)
+            self.choice.Show("choices" in self.tasks[self.current])
+            self.currentSprayLayer = self.choice.GetStringSelection()
+            self.scaniface.additionalParams4Analyses = {
+                "sprayLayer": self.currentSprayLayer
+            }
         self.instructions.SetLabel(self._getInstructions())
         self.Layout()
 
@@ -422,6 +463,16 @@ class ActivitiesPanel(wx.Panel):
             "calibrate" in self.tasks[self.current]
             and self.tasks[self.current]["calibrate"]
         )
+        if self.tasks[self.current]["choices"]:
+            choices = self.tasks[self.current]["choices"]
+            self.choice.Set(choices)
+            default = 0
+            self.choice.SetSelection(default)
+            self.choice.Show("choices" in self.tasks[self.current])
+            self.currentSprayLayer = self.choice.GetStringSelection()
+            self.scaniface.additionalParams4Analyses = {
+                "sprayLayer": self.currentSprayLayer
+            }
         self.instructions.SetLabel(self._getInstructions())
         self.Layout()
 
