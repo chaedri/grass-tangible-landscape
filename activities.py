@@ -46,7 +46,7 @@ class ActivitiesPanel(wx.Panel):
         self.scaniface = scaniface
         self.current = 0
         self.currentSubtask = 0
-        self.currentSprayLayer = ""
+        self.currentSprayLayer = "dummy"
         self.startTime = 0
         self.endTime = 0
         self.settingsChanged = Signal("ActivitiesPanel.settingsChanged")
@@ -86,7 +86,7 @@ class ActivitiesPanel(wx.Panel):
         self.buttonBack.Bind(wx.EVT_BUTTON, self.OnBack)
         self.buttonForward.Bind(wx.EVT_BUTTON, self.OnForward)
         self.buttonStart = wx.Button(self, label="Start activity")
-        self.buttonCalibrate = wx.Button(self, size=(150, -1), label="Calibrate")
+        self.buttonCalibrate = wx.Button(self, size=(150, -1), label="Scan Elevation")
         self.buttonStop = wx.Button(self, label="End activity")
         self.buttonStart.Bind(wx.EVT_BUTTON, self.OnStart)
         self.buttonCalibrate.Bind(
@@ -131,7 +131,7 @@ class ActivitiesPanel(wx.Panel):
         self.mainSizer.Add(sizer, flag=wx.EXPAND | wx.ALL, border=5)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(
-            self.buttonCalibrate, proportion=0, flag=wx.ALIGN_CENTER_VERTICAL, border=5
+            self.buttonCalibrate, proportion=1, flag=wx.ALIGN_CENTER_VERTICAL, border=5
         )
         sizer.Add(self.choice, proportion=1, flag=wx.ALIGN_CENTER_VERTICAL, border=5)
 
@@ -282,7 +282,7 @@ class ActivitiesPanel(wx.Panel):
                 exec(
                     "myanalyses."
                     + func
-                    + "(eventHandler=wx.GetTopLevelParent(self), env=env)"
+                    + "(eventHandler=wx.GetTopLevelParent(self), sprayLayer=self.scaniface.additionalParams4Analyses['sprayLayer'], env=env)"
                 )
             except (CalledModuleError, Exception, ScriptError):
                 print(traceback.print_exc())
@@ -393,7 +393,7 @@ class ActivitiesPanel(wx.Panel):
         self._loadScanningParams(key="calibration_scanning_params")
 
         # resume scanning
-        self.buttonCalibrate.SetLabel("Calibrating...")
+        self.buttonCalibrate.SetLabel("Scanning...")
         self.scaniface.filter["filter"] = False
         self._startScanning()
 
@@ -401,7 +401,7 @@ class ActivitiesPanel(wx.Panel):
 
     def CalibrationDone(self, startTask):
         def process():
-            self.buttonCalibrate.SetLabel("Calibrate")
+            self.buttonCalibrate.SetLabel("Scan Elevation")
             self.settings["output"]["calibrate"] = False
 
         self._stopScanning()
@@ -565,7 +565,7 @@ class ActivitiesPanel(wx.Panel):
         self._hideToolbarStatusbar()
         self.currentSubtask = 0
         self._processingSubTask = False
-        self.scaniface.additionalParams4Analyses = {"subTask": self.currentSubtask}
+        self.scaniface.additionalParams4Analyses["subTask"] = self.currentSubtask
         self.LoadLayers()
         if "base" in self.tasks[self.current]:
             self.settings["scan"]["elevation"] = self.tasks[self.current]["base"]
