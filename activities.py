@@ -46,7 +46,7 @@ class ActivitiesPanel(wx.Panel):
         self.scaniface = scaniface
         self.current = 0
         self.currentSubtask = 0
-        self.currentSprayLayer = "dummy"
+        self.currentSprayLayer = "foo"
         self.startTime = 0
         self.endTime = 0
         self.settingsChanged = Signal("ActivitiesPanel.settingsChanged")
@@ -169,6 +169,7 @@ class ActivitiesPanel(wx.Panel):
 
         self.Bind(EVT_UPDATE_PROFILE, self.OnProfileUpdate)
         self.Bind(EVT_UPDATE_DISPLAY, self.OnDisplayUpdate)
+        self.Bind(wx.EVT_CHAR_HOOK, self.onKeyPress)
 
         self._init()
 
@@ -377,6 +378,12 @@ class ActivitiesPanel(wx.Panel):
         if key in self.tasks[self.current]:
             for each in self.tasks[self.current][key].keys():
                 self.settings["scan"][each] = self.tasks[self.current][key][each]
+
+    def onKeyPress(self, event):
+        if event.GetKeyCode() == wx.WXK_F8:
+            self.Calibrate(startTask=False)
+        else:
+            event.Skip()
 
     def Calibrate(self, startTask):
         self._loadConfiguration(None)
