@@ -191,7 +191,7 @@ for example for detection of markers. Specifying 'true' will result in creating 
 This is optional.
 
 ```json
- "calibration": false,
+ "calibrate": false,
 ```
 
 
